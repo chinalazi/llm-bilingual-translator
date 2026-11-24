@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>全网页 LLM 双语翻译器</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="title-wrap">
+      <button type="button" id="backBtn" class="back-btn hidden" title="返回主菜单">‹ 返回</button>
+      <h1 id="headerTitle">全网页 LLM 翻译器</h1>
+      <span class="badge" id="versionBadge"></span>
+    </div>
+    <label class="switch" title="启用/暂停扩展">
+      <input type="checkbox" id="enabled" />
+      <span class="slider"></span>
+    </label>
+  </header>
+
+  <!-- 一级主菜单 -->
+  <main class="container" id="mainView">
+    <button type="button" class="nav-card" id="openApiConfigBtn">
+      <div class="nav-card-left">
+        <div class="nav-card-title">LLM API 接口配置</div>
+        <div class="nav-card-sub" id="apiSummary">未配置</div>
+      </div>
+      <span class="nav-arrow">›</span>
+    </button>
+
+    <section class="card">
+      <h2>翻译与排版偏好</h2>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="mode">触发模式</label>
+          <select id="mode">
+            <option value="auto">自动整篇翻译</option>
+            <option value="manual">手动点击胶囊翻译</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="targetLang">目标语言</label>
+          <select id="targetLang"></select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="accentColor">译文主题色</label>
+          <input type="color" id="accentColor" />
+        </div>
+
+        <div class="field">
+          <label for="mutedOpacity">译文柔和度</label>
+          <select id="mutedOpacity">
+            <option value="0.72">0.72 (更柔和)</option>
+            <option value="0.88">0.88 (推荐)</option>
+            <option value="0.95">0.95 (清晰)</option>
+            <option value="1">1.00 (与原文一致)</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="xReplaceOriginal" />
+        <span><strong>X / Twitter 专用</strong>：译文替换原文（可点语种标还原）</span>
+      </label>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="showFloatingBar" />
+        <span>显示网页悬浮控制胶囊（默认最小化，可拖拽）</span>
+      </label>
+    </section>
+
+    <section class="card">
+      <div class="stats-header">
+        <h2>累计 Token 用量</h2>
+        <button type="button" id="resetTokensBtn" class="btn-secondary btn-xs">清零</button>
+      </div>
+      <div id="tokenSummary" class="token-summary">输入 0 / 输出 0 / 总计 0</div>
+    </section>
+  </main>
+
+  <!-- 二级子菜单：LLM API 接口配置 -->
+  <main class="container hidden" id="apiView">
+    <section class="card">
+      <div class="field">
+        <label for="provider">接口类型</label>
+        <select id="provider">
+          <option value="gemini">Google Gemini (原生接口)</option>
+          <option value="openai">OpenAI 兼容接口 (OpenAI / DeepSeek / OpenRouter / Ollama)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="baseUrl">API Base URL</label>
+        <input type="url" id="baseUrl" placeholder="https://generativelanguage.googleapis.com/v1beta" />
+      </div>
+
+      <div class="field">
+        <label for="apiKey">API Key</label>
+        <div class="input-row">
+          <input type="password" id="apiKey" placeholder="在此填写你的 API Key" autocomplete="off" />
+          <button type="button" id="toggleKey" class="btn-secondary">显示</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="modelPreset">Model 名称 (下拉选择或自定义输入)</label>
+        <select id="modelPreset"></select>
+        <input type="text" id="model" placeholder="gemini-3.5-flash-lite" style="margin-top:4px;" />
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label for="systemPrompt">系统提示词 (支持 <code>{{targetLang}}</code> 变量)</label>
+          <button type="button" id="resetPromptBtn" class="btn-link">恢复默认</button>
+        </div>
+        <textarea id="systemPrompt" rows="5"></textarea>
+      </div>
+
+      <div class="actions-row">
+        <button type="button" id="testBtn" class="btn-secondary">测试连接</button>
+        <button type="button" id="saveBtn" class="btn-primary">保存配置</button>
+      </div>
+      <div id="statusMsg" class="status-msg" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Universal LLM Bilingual Translator",
+  "version": "2.5.0",
+  "description": "Translate any non-Chinese webpage with whole-article context using configurable LLM APIs (Gemini, OpenAI-compatible, DeepSeek, Ollama), preserving layout with one-click restore and token tracking.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://*/*", "http://*/*"],
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
+    },
+    "default_popup": "popup/popup.html"
+  },
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*/*", "http://*/*"],
+      "js": ["js/config.js", "js/content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
