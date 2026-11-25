@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Universal LLM Bilingual Translator",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Translate any non-Chinese webpage with whole-article context using configurable LLM APIs (Gemini, OpenAI-compatible, DeepSeek, Ollama), preserving layout with one-click restore and token tracking.",
   "permissions": ["storage"],
   "host_permissions": ["https://*/*", "http://*/*"],

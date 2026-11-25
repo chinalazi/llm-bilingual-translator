@@ -868,13 +868,16 @@
           const trText = cleanRenderedText(typeof entry === "string" ? entry : entry?.text || "");
           const trLang = normalizeLangCode(typeof entry === "object" ? entry?.lang : "", item.text);
 
-          if (!trText || trText === "__SKIP__") {
+          if (trText === "__SKIP__") {
             cache.set(item.cacheKey, { text: "__SKIP__", lang: "" });
             item.el.dataset.xtDone = "skip";
-          } else {
+          } else if (trText) {
             cache.set(item.cacheKey, { text: trText, lang: trLang });
             item.el.dataset.xtDone = "1";
             insertTranslationBlock(item.el, trText, item.codes, false, trLang);
+          } else {
+            // Model missed this segment tag; leave unobserved so it can retry instead of permanently skipping
+            delete item.el.dataset.xtObserved;
           }
         });
       }
@@ -932,6 +935,9 @@
     if (batch.length > 0) {
       translateItems(batch);
     }
+    if (dynamicQueue.length > 0) {
+      dynamicTimer = setTimeout(flushDynamicQueue, 350);
+    }
   }
 
   function setupDynamicObservers() {
@@ -939,6 +945,13 @@
     if (mutationObserver) mutationObserver.disconnect();
 
     if (!isXSite()) return;
+
+    // Clear any stale xtObserved markers that have not finished translating
+    document.querySelectorAll("div[data-testid='tweetText'][data-xt-observed='1']").forEach((el) => {
+      if (!el.dataset.xtDone) {
+        delete el.dataset.xtObserved;
+      }
+    });
 
     intersectionObserver = new IntersectionObserver(
       (entries) => {
@@ -954,12 +967,12 @@
             }
             dynamicQueue.push({ el, text, codes });
             if (!dynamicTimer) {
-              dynamicTimer = setTimeout(flushDynamicQueue, 300);
+              dynamicTimer = setTimeout(flushDynamicQueue, 250);
             }
           }
         }
       },
-      { rootMargin: "200px 0px" }
+      { rootMargin: "250px 0px" }
     );
 
     const scanX = () => {
@@ -978,6 +991,14 @@
 
   function clearAllTranslations() {
     runId++;
+    if (intersectionObserver) {
+      intersectionObserver.disconnect();
+      intersectionObserver = null;
+    }
+    if (mutationObserver) {
+      mutationObserver.disconnect();
+      mutationObserver = null;
+    }
     dynamicQueue = [];
     if (dynamicTimer) {
       clearTimeout(dynamicTimer);
@@ -1018,13 +1039,18 @@
       currentHref = location.href;
       isRestored = false;
       clearAllTranslations();
-      setTimeout(() => {
+      if (isXSite()) {
+        // On X, re-attach observers immediately so async replies are never missed
         startForCurrentState();
-      }, 450);
+      } else {
+        setTimeout(() => {
+          startForCurrentState();
+        }, 450);
+      }
     };
 
     window.addEventListener("popstate", onUrlChange);
-    routeTimer = setInterval(onUrlChange, 1200);
+    routeTimer = setInterval(onUrlChange, 600);
   }
 
   async function init() {
